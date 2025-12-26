@@ -43,7 +43,17 @@ SYSTEM_PROMPT = (
     "- Use read_file only after confirming the file exists.\n"
     "- Use write_file only when documentation updates are justified.\n"
     "- When updating files, preserve existing structure and tone.\n"
-    "- Modify only the minimum necessary content.\n\n"
+    "- Modify only the minimum necessary content.\n"
+    "- Don't use placeholder texts.\n\n"
+
+    "PRE-WRITE REQUIREMENT:"
+
+    "Before calling write_file, you MUST produce a structured change plan including:"
+    "- File name\n"
+    "- Sections to be modified or added\n"
+    "- Reason for each change\n"
+    "If this plan is empty, you MUST NOT write any file.\n"
+
 
     "Docstrings:\n"
     "- If a modified file contains functions or classes:\n"
