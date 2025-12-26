@@ -92,7 +92,6 @@ class Agent:
                 self.discovered_files.add(p)
 
     def _execute_tool(self, name: str, arguments: Dict[str, Any]) -> Tuple[str, Optional[Dict[str, Any]]]:
-        # Gate writes unless allowed
         if name == "write_file" and not self.allow_writes:
             return (
                 json.dumps({
@@ -105,6 +104,7 @@ class Agent:
         if name == "get_file_info":
             if self.verbose:
                 print(f"Executing get_file_info with arguments: {arguments}")
+
             raw_path = arguments.get("path", "")
             allowed_tail = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/~ ")
             while raw_path and raw_path[-1] not in allowed_tail:
@@ -114,8 +114,10 @@ class Agent:
             return json.dumps(info), info
 
         if name == "read_file":
+            if self.verbose:
+                print(f"Executing read_file with arguments: {arguments}")
+
             norm = _normalize_path(arguments["path"])
-            # Enforce: only read known file discovered via get_file_info
             if norm not in self.discovered_files:
                 return (
                     json.dumps({
@@ -129,8 +131,10 @@ class Agent:
             return json.dumps({"path": norm, "content": content}), None
 
         if name == "write_file":
+            if self.verbose:
+                print(f"Executing write_file with arguments: {arguments}")
+
             msg = write_file(arguments["path"], arguments["content"])
-            # Record the newly written file as discovered
             self.discovered_files.add(_normalize_path(arguments["path"]))
             return json.dumps({"message": msg}), None
 
@@ -155,7 +159,6 @@ class Agent:
             choice = resp.choices[0]
             msg = choice.message
 
-            # If the assistant responds with tool calls, execute them step-by-step
             tool_calls = msg.tool_calls or []
             if tool_calls:
                 messages.append({"role": "assistant", "content": msg.content or "",
@@ -172,10 +175,8 @@ class Agent:
                             "content": result_json,
                         }
                     )
-                # Continue loop for model to observe tool outputs
                 continue
 
-            # No tool calls: assume final answer
             return msg.content or ""
 
         return "Reached max_steps without completion."
