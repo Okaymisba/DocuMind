@@ -1,8 +1,8 @@
-import os
-import sys
 import argparse
+import os
 
 from dotenv import load_dotenv
+
 from agent.agent import Agent
 
 
