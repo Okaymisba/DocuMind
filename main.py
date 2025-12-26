@@ -11,7 +11,7 @@ def run(user_goal: str, verbose: bool = False):
 
     project_root = os.path.dirname(os.path.abspath(__file__))
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    allow_writes = False
+    allow_writes = True
 
     if verbose:
         print(f"Project root: {project_root}")
