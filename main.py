@@ -29,7 +29,7 @@ def main():
     parser.add_argument(
         "user_goal",
         nargs="?",
-        default="Please analyze the codebase and update the documentation as needed. Focus on .md files, docs/ directory, and ensure all modified code has proper docstrings. Only make changes that add value and clearly explain your reasoning.",
+        default="Please analyze the codebase and update the documentations as needed. Focus on .md files, docs/ directory, and ensure all modified code has proper docstrings.",
         help="Instruction for the agent",
     )
     parser.add_argument(
