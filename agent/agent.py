@@ -34,26 +34,27 @@ SYSTEM_PROMPT = (
     "- Create new documentation files ONLY if a new concept, workflow, or feature is introduced.\n\n"
 
     "Repository Navigation:\n"
-    "- Use get_file_info to list files and directories.\n"
+    "- Use get_file_info to list contents of DIRECTORY PATHS ONLY, make sure it is not a file.\n"
+    "- Use read_file to read the contents of FILES.\n"
     "- Start exploration from the root directory using get_file_info with '.'.\n"
     "- Navigate directories step by step.\n"
-    "- NEVER assume a file or directory exists without checking.\n\n"
+    "- NEVER assume a file or directory exists without checking.\n"
+    "- ALWAYS verify if a path is a directory using get_file_info before using it as such.\n\n"
 
     "File Operations:\n"
-    "- Use read_file only after confirming the file exists.\n"
+    "- Use read_file only after confirming the path is a file.\n"
+    "- Use get_file_info only for directory paths.\n"
     "- Use write_file only when documentation updates are justified.\n"
     "- When updating files, preserve existing structure and tone.\n"
     "- Modify only the minimum necessary content.\n"
     "- Don't use placeholder texts.\n\n"
 
     "PRE-WRITE REQUIREMENT:"
-
-    "Before calling write_file, you MUST produce a structured change plan including:"
+    "Before calling write_file, you MUST produce a structured change plan including:\n"
     "- File name\n"
     "- Sections to be modified or added\n"
     "- Reason for each change\n"
     "If this plan is empty, you MUST NOT write any file.\n"
-
 
     "Docstrings:\n"
     "- If a modified file contains functions or classes:\n"
@@ -65,7 +66,8 @@ SYSTEM_PROMPT = (
     "- Never hallucinate file paths.\n"
     "- Never invent undocumented features.\n"
     "- Never update documentation without evidence from the diff.\n"
-    "- Always think step by step before taking actions.\n\n"
+    "- Always think step by step before taking actions.\n"
+    "- Always verify path types (file vs directory) before operations.\n\n"
 
     "Output Expectations:\n"
     "- Clearly explain WHY a documentation update is needed.\n"
@@ -161,9 +163,17 @@ class Agent:
             allowed_tail = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-/~ ")
             while raw_path and raw_path[-1] not in allowed_tail:
                 raw_path = raw_path[:-1]
-            info = get_file_info(raw_path)
-            self._record_discovery(info)
-            return json.dumps(info), info
+            try:
+                info = get_file_info(raw_path)
+                self._record_discovery(info)
+                return json.dumps(info), info
+            except FileNotFoundError as e:
+                return json.dumps({
+                    "error": "not_found",
+                    "message": str(e),
+                    "suggestion": "The requested path does not exist. Please verify the path and try again.",
+                    "path": raw_path
+                }), None
 
         if name == "read_file":
             if self.verbose:
